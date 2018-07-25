@@ -49,29 +49,35 @@ function getWeather(evt) {
       longitude = -73.7120832;
    }
 
-   if (!httpRequest) {
-       httpRequest = getRequestObject();
-   }
+  var url = "https://api.forecast.io/forecast/24a14bcfe258e40e42521327d4632887/" + latitude + "," + longitude + "?callback=getForecast";
 
-   httpRequest.abort();
-   httpRequest.open("get", "solar.php?" + "lat=" + latitude + "&lng=" + longitude, true);
-   httpRequest.send(null);
-
-   httpRequest.onreadystatechange = fillWeather;
+  var script = document.createElement("script");
+  script.id = "jsonp";
+  script.src = url;
+  document.body.appendChild(script);
 }
 
-function fillWeather(){
-    if(httpRequest.readyState === 4 && httpRequest.status === 200) {
-        weatherReport = JSON.parse(httpRequest.responseText);
+function getForecast(forecast){
+    try {
+        fillWeather(forecast);
+    }
+    finally {
+        var script = document.getElementById("jsonp");
+        script.parentNode.removeChild(script);
+    }
+}
+
+function fillWeather(weatherReport){
+  
 
         var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
         var dateValue = new Date(weatherReport.daily.data[0].time);
         var dayOfWeek = dateValue.getDay();
         var rows = document.querySelector("section.week table caption").innerHTML = selectedCity;
         for(var i = 0; i < rows.length ; i++){
-            var firstCell = rows[i].getElementByTagName("td")[0];
-            var secondCell = rows[i].getElementByTagName("td")[1];
-            var thirdCell = rows[i].getElementByTagName("td")[2];
+            var firstCell = rows[i].getElementsByTagName("td")[0];
+            var secondCell = rows[i].getElementsByTagName("td")[1];
+            var thirdCell = rows[i].getElementsByTagName("td")[2];
             firstCell.innerHTML = days[dayOfWeek];
             if (dayOfWeek + 1 === 7){
             dayOfWeek = 0;
@@ -91,7 +97,7 @@ function fillWeather(){
             else if (sun <= 10) {secondCell.style.color = "rbg(255,247,230)";}
             secondCell.style.fontSize = "2.5em";
             thirdCell.innerHTML = sun + "%";
-        }
+        
         document.querySelector("section.week table caption").style.display = "block";
         document.querySelector("section.week table").style.display = "inline-block";
         document.querySelector("section.week p.credit").style.display = "block";
